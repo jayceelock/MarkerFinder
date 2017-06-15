@@ -79,6 +79,7 @@ class ActivityMain : Activity()
                             framePairList.add(TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE))
 
                             tango?.connectListener(framePairList, ClassTangoUpdateCallback(this@ActivityMain))
+                            tango?.experimentalConnectOnFrameListener(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, ClassTangoUpdateCallback(this@ActivityMain))
 
                             var tangoConfig: TangoConfig? = tango?.getConfig(TangoConfig.CONFIG_TYPE_DEFAULT)
                             tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_COLORCAMERA, true)
