@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Display
 import com.google.atap.tangoservice.*
+import com.google.atap.tangoservice.experimental.TangoImageBuffer
 import com.projecttango.tangosupport.TangoSupport
 import org.rajawali3d.view.SurfaceView
 import java.util.concurrent.atomic.AtomicBoolean
@@ -17,8 +18,9 @@ class ActivityMain : Activity()
     private val TAG = "ActivityMain.class"
     private val INVALID_TEXTURE_ID: Int = 0
 
-    internal var surfaceView : SurfaceView? = null
-    internal var renderer : ClassRenderer? = null
+    lateinit internal var surfaceView : SurfaceView
+    lateinit internal var renderer : ClassRenderer
+    internal var tangoImageBuffer: TangoImageBuffer? = null
 
     internal var tango: Tango? = null
 
@@ -43,7 +45,7 @@ class ActivityMain : Activity()
 
             override fun onDisplayChanged(displayId: Int)
             {
-                synchronized(this)
+                synchronized(this@ActivityMain)
                 {
                     setDisplayRotation()
                 }
@@ -54,21 +56,19 @@ class ActivityMain : Activity()
 
         renderer = setupRenderer()
         surfaceView = findViewById(R.id.surfaceview) as SurfaceView
-        surfaceView?.setSurfaceRenderer(renderer)
+        surfaceView.setSurfaceRenderer(renderer)
     }
 
     override fun onResume()
     {
         super.onResume()
 
-        surfaceView?.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
+        surfaceView.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
 
         if(!tangoIsConnected)
         {
-            tango = Tango(this, object: Runnable
+            tango = Tango(this, Runnable
             {
-                override fun run()
-                {
                     synchronized(this@ActivityMain)
                     {
                         try
@@ -83,8 +83,11 @@ class ActivityMain : Activity()
 
                             var tangoConfig: TangoConfig? = tango?.getConfig(TangoConfig.CONFIG_TYPE_DEFAULT)
                             tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_COLORCAMERA, true)
+                            tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_DEPTH, true)
                             tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_DRIFT_CORRECTION, true)
                             tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_LOWLATENCYIMUINTEGRATION, true)
+
+                            tangoConfig?.putInt(TangoConfig.KEY_INT_DEPTH_MODE, TangoConfig.TANGO_DEPTH_MODE_POINT_CLOUD)
 
                             tango?.connect(tangoConfig)
                             tangoIsConnected = true
@@ -99,15 +102,12 @@ class ActivityMain : Activity()
                             Log.e(TAG, "Tango connection error: " + e)
                         }
                     }
-                }
             })
         }
     }
 
     override fun onPause()
     {
-        super.onPause()
-
         synchronized(this@ActivityMain)
         {
             if(tangoIsConnected)
@@ -120,13 +120,14 @@ class ActivityMain : Activity()
                 connectedGLThreadID = INVALID_TEXTURE_ID
             }
         }
+        super.onPause()
     }
 
     fun setupRenderer() : ClassRenderer
     {
-        var renderer = ClassRenderer(this)
+        val renderer = ClassRenderer(this@ActivityMain)
 
-        renderer.currentScene.registerFrameCallback(ClassRajawaliFrameCallback(this))
+        renderer.currentScene.registerFrameCallback(ClassRajawaliFrameCallback(this@ActivityMain))
 
         return renderer
     }
@@ -136,10 +137,10 @@ class ActivityMain : Activity()
         val display: Display = windowManager.defaultDisplay
         displayRotation = display.rotation
 
-        surfaceView?.queueEvent {
+        surfaceView.queueEvent{
             if(tangoIsConnected)
             {
-                renderer?.updateColorCameraTextureUvGlThread(displayRotation)
+                renderer.updateColorCameraTextureUvGlThread(displayRotation)
             }
         }
     }

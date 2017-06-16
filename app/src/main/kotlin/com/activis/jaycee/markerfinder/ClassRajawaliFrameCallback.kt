@@ -8,11 +8,9 @@ import com.google.atap.tangoservice.TangoPoseData
 import com.projecttango.tangosupport.TangoSupport
 import org.rajawali3d.scene.ASceneFrameCallback
 
-class ClassRajawaliFrameCallback(activityMain: ActivityMain): ASceneFrameCallback()
+class ClassRajawaliFrameCallback(val activityMain: ActivityMain): ASceneFrameCallback()
 {
     private val TAG: String = "RajawaliFrameCallback"
-
-    internal val activityMain: ActivityMain = activityMain
 
     override fun onPreFrame(sceneTime: Long, deltaTime: Double)
     {
@@ -27,20 +25,20 @@ class ClassRajawaliFrameCallback(activityMain: ActivityMain): ASceneFrameCallbac
                 }
 
                 /* Set up scene camera to match camera intrinsics */
-                if(activityMain.renderer!!.isSceneCameraConfigured)
+                if(activityMain.renderer.isSceneCameraConfigured)
                 {
                     val cameraIntrinsics: TangoCameraIntrinsics = TangoSupport.getCameraIntrinsicsBasedOnDisplayRotation(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, activityMain.displayRotation)
-                    activityMain.renderer?.setProjectionMatrix(projectionMatrixFromCameraIntrinsics(cameraIntrinsics))
+                    activityMain.renderer.setProjectionMatrix(projectionMatrixFromCameraIntrinsics(cameraIntrinsics))
                 }
 
                 /* Connect the camera texture to the OpenGL Texture if necessary
                    When the OpenGL context is recycled, Rajawali may regenerate the texture with a different ID.
                 */
-                if(activityMain.connectedGLThreadID != activityMain.renderer?.getTextureId())
+                if(activityMain.connectedGLThreadID != activityMain.renderer.getTextureId())
                 {
-                    activityMain.tango?.connectTextureId(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, activityMain.renderer!!.getTextureId())
-                    activityMain.connectedGLThreadID = activityMain.renderer!!.getTextureId()
-                    Log.d(TAG, "Connected to texture ID: " + activityMain.renderer?.getTextureId())
+                    activityMain.tango?.connectTextureId(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, activityMain.renderer.getTextureId())
+                    activityMain.connectedGLThreadID = activityMain.renderer.getTextureId()
+                    Log.d(TAG, "Connected to texture ID: " + activityMain.renderer.getTextureId())
                 }
 
                 /* Update the frame if there's a new RGB frame */
@@ -61,8 +59,31 @@ class ClassRajawaliFrameCallback(activityMain: ActivityMain): ASceneFrameCallbac
                             activityMain.displayRotation)
                     if (poseData.statusCode == TangoPoseData.POSE_VALID)
                     {
-                        activityMain.renderer?.updateRenderCameraPose(poseData)
+                        activityMain.renderer.updateRenderCameraPose(poseData)
                         activityMain.cameraPoseTimestamp = poseData.timestamp
+
+                        /* Detect markers in new RGB frame */
+                        val oglTcolorPose = TangoSupport.getPoseAtTime(activityMain.tangoImageBuffer!!.timestamp,
+                                TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
+                                TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
+                                TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
+                                TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
+                                TangoSupport.ROTATION_IGNORED)
+
+                        val markerParam: TangoSupport.MarkerParam = TangoSupport.MarkerParam()
+                        markerParam.markerSize = 0.14
+                        markerParam.type = TangoSupport.TANGO_MARKER_ARTAG
+
+                        try
+                        {
+                            val markerList: List<TangoSupport.Marker> = TangoSupport.detectMarkers(activityMain.tangoImageBuffer, TangoCameraIntrinsics.TANGO_CAMERA_COLOR, oglTcolorPose.translation, oglTcolorPose.rotation, markerParam)
+                            activityMain.renderer.updateMarker(markerList)
+                            //Log.d(TAG, String.format("Found marker: %d", markerList.size))
+                        }
+                        catch(e: TangoErrorException)
+                        {
+                            Log.e(TAG, "Marker error: ", e)
+                        }
                     }
 
                     else
