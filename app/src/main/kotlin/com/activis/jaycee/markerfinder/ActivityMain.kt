@@ -1,12 +1,17 @@
 package com.activis.jaycee.markerfinder
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.opengl.GLSurfaceView
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.Display
+import android.widget.Toast
 import com.google.atap.tangoservice.*
 import com.google.atap.tangoservice.experimental.TangoImageBuffer
 import com.projecttango.tangosupport.TangoSupport
@@ -65,43 +70,9 @@ class ActivityMain : Activity()
 
         surfaceView.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
 
-        if(!tangoIsConnected)
+        if(checkAndRequestPermissions())
         {
-            tango = Tango(this, Runnable
-            {
-                    synchronized(this@ActivityMain)
-                    {
-                        try
-                        {
-                            var framePairList: ArrayList<TangoCoordinateFramePair> = ArrayList()
-                            framePairList.add(TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE))
-
-                            tango?.connectListener(framePairList, ClassTangoUpdateCallback(this@ActivityMain))
-                            tango?.experimentalConnectOnFrameListener(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, ClassTangoUpdateCallback(this@ActivityMain))
-
-                            var tangoConfig: TangoConfig? = tango?.getConfig(TangoConfig.CONFIG_TYPE_DEFAULT)
-                            tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_COLORCAMERA, true)
-                            tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_DEPTH, true)
-                            tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_DRIFT_CORRECTION, true)
-                            tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_LOWLATENCYIMUINTEGRATION, true)
-
-                            tangoConfig?.putInt(TangoConfig.KEY_INT_DEPTH_MODE, TangoConfig.TANGO_DEPTH_MODE_POINT_CLOUD)
-
-                            tango?.connect(tangoConfig)
-                            TangoSupport.initialize(tango)
-                            tangoIsConnected = true
-                            setDisplayRotation()
-                        }
-                        catch (e: TangoOutOfDateException)
-                        {
-                            Log.e(TAG, "Tango core out of date, please update: " + e)
-                        }
-                        catch (e: TangoErrorException)
-                        {
-                            Log.e(TAG, "Tango connection error: " + e)
-                        }
-                    }
-            })
+            initialiseTango()
         }
     }
 
@@ -120,6 +91,83 @@ class ActivityMain : Activity()
             }
         }
         super.onPause()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?)
+    {
+        if(hasPermissions())
+        {
+            initialiseTango()
+        }
+        else
+        {
+            Toast.makeText(this@ActivityMain, "Requires additional permission.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    fun initialiseTango()
+    {
+        tango = Tango(this, Runnable
+        {
+            synchronized(this@ActivityMain)
+            {
+                try
+                {
+                    var framePairList: ArrayList<TangoCoordinateFramePair> = ArrayList()
+                    framePairList.add(TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE))
+
+                    tango?.connectListener(framePairList, ClassTangoUpdateCallback(this@ActivityMain))
+                    tango?.experimentalConnectOnFrameListener(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, ClassTangoUpdateCallback(this@ActivityMain))
+
+                    var tangoConfig: TangoConfig? = tango?.getConfig(TangoConfig.CONFIG_TYPE_DEFAULT)
+                    tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_COLORCAMERA, true)
+                    tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_DEPTH, true)
+                    tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_DRIFT_CORRECTION, true)
+                    tangoConfig?.putBoolean(TangoConfig.KEY_BOOLEAN_LOWLATENCYIMUINTEGRATION, true)
+
+                    tangoConfig?.putInt(TangoConfig.KEY_INT_DEPTH_MODE, TangoConfig.TANGO_DEPTH_MODE_POINT_CLOUD)
+
+                    tango?.connect(tangoConfig)
+                    TangoSupport.initialize(tango)
+                    tangoIsConnected = true
+                    setDisplayRotation()
+                }
+                catch (e: TangoOutOfDateException)
+                {
+                    Log.e(TAG, "Tango core out of date, please update: " + e)
+                }
+                catch (e: TangoErrorException)
+                {
+                    Log.e(TAG, "Tango connection error: " + e)
+                }
+            }
+        })
+    }
+
+    fun checkAndRequestPermissions(): Boolean
+    {
+        val permissionCamera: Int = ContextCompat.checkSelfPermission(ActivityMain@this, Manifest.permission.CAMERA)
+
+        val permissionsRequired: MutableList<String> = ArrayList<String>()
+
+        if(permissionCamera != PackageManager.PERMISSION_GRANTED)
+        {
+            permissionsRequired.add(Manifest.permission.CAMERA)
+        }
+
+        if(!permissionsRequired.isEmpty())
+        {
+            ActivityCompat.requestPermissions(this@ActivityMain, permissionsRequired.toTypedArray(), 0)
+
+            return false
+        }
+
+        return true
+    }
+
+    fun hasPermissions(): Boolean
+    {
+        return ContextCompat.checkSelfPermission(this@ActivityMain, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
     }
 
     fun setupRenderer() : ClassRenderer

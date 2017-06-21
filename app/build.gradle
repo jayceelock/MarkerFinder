@@ -2,20 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "26.0.0"
+    compileSdkVersion 23
+    buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "com.activis.jaycee.markerfinder"
         minSdkVersion 19
-        targetSdkVersion 25
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                cppFlags ""
-            }
-        }
     }
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
@@ -24,11 +18,6 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
         }
     }
 }
@@ -40,7 +29,5 @@ dependencies {
     compile 'org.rajawali3d:rajawali:1.1.777@aar'
     compile "com.google.tango:sdk-base:${tango_version}"
     compile "com.google.tango:support-base:${tango_version}"
-}
-repositories {
-    mavenCentral()
+    compile 'com.android.support:appcompat-v7:23.0.0'
 }
