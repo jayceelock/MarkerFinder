@@ -73,8 +73,6 @@ class ActivityMain : Activity()
                     {
                         try
                         {
-                            TangoSupport.initialize()
-
                             var framePairList: ArrayList<TangoCoordinateFramePair> = ArrayList()
                             framePairList.add(TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE))
 
@@ -90,6 +88,7 @@ class ActivityMain : Activity()
                             tangoConfig?.putInt(TangoConfig.KEY_INT_DEPTH_MODE, TangoConfig.TANGO_DEPTH_MODE_POINT_CLOUD)
 
                             tango?.connect(tangoConfig)
+                            TangoSupport.initialize(tango)
                             tangoIsConnected = true
                             setDisplayRotation()
                         }

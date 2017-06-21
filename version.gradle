@@ -1,6 +1,6 @@
 allprojects {
     ext {
         kotlin_version = '1.1.2-5'
-        tango_version = '1.53'
+        tango_version = '1.54'
     }
 }

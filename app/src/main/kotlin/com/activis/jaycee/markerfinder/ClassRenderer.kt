@@ -54,7 +54,7 @@ class ClassRenderer(context: Context) : Renderer(context)
         {
             Log.e(TAG, "Texture exception: ", e)
         }
-        currentScene.addChild(screenBackgroundQuad)
+        currentScene.addChildAt(screenBackgroundQuad, 0)
     }
 
     override fun onOffsetsChanged(xOffset: Float, yOffset: Float, xOffsetStep: Float, yOffsetStep: Float, xPixelOffset: Int, yPixelOffset: Int) { }
@@ -126,25 +126,22 @@ class ClassRenderer(context: Context) : Renderer(context)
                 //markerPose.translation = marker.translation
                 //markerPose.rotation = marker.orientation
 
-                val transformMatrix: Matrix4 = tangoPoseToMatrix(tangoPose)
+                //val transformMatrix: Matrix4 = tangoPoseToMatrix(tangoPose)
                 // Log.d(TAG, String.format("%d %d %d %d", transformMatrix.doubleValues))
                 // TangoSupport.doubleTransformPose(transformMatrix.doubleValues, marker.translation, marker.orientation, marker.translation, marker.orientation)
 
-                val  markerContent: String = marker.content
-                if(markerContent !in markerObjectHash)
+                val  existingMarker: ClassMarkerObject? = markerObjectHash[marker.content]
+
+                if(existingMarker != null)
                 {
+                    currentScene.removeChild(existingMarker.markerObject)
+                }
                     val obj: ClassMarkerObject = ClassMarkerObject(marker)
                     obj.transformObject()
                     obj.makeMarker()
                     currentScene.addChild(obj.markerObject)
 
-                    markerObjectHash[markerContent] = obj
-                }
-                else
-                {
-                    val obj: ClassMarkerObject? = markerObjectHash[markerContent]
-                    obj?.updatePosition(marker)
-                }
+                    markerObjectHash[marker.content] = obj
             }
         }
     }
