@@ -1,160 +1,195 @@
+/*
+ * Copyright 2017 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.activis.jaycee.markerfinder
 
+import com.google.atap.tangoservice.TangoPoseData
+
 import android.content.Context
+
 import android.util.Log
 import android.view.MotionEvent
-import com.google.atap.tangoservice.TangoPoseData
-import com.projecttango.tangosupport.TangoSupport
 import org.rajawali3d.materials.Material
 import org.rajawali3d.materials.textures.ATexture
 import org.rajawali3d.materials.textures.StreamingTexture
 import org.rajawali3d.math.Matrix4
 import org.rajawali3d.math.Quaternion
-import org.rajawali3d.math.vector.Vector3
 import org.rajawali3d.primitives.ScreenQuad
 import org.rajawali3d.renderer.Renderer
+
+import java.util.HashMap
+
 import javax.microedition.khronos.opengles.GL10
 
+import com.projecttango.tangosupport.TangoSupport
+
+/**
+ * Renderer that implements a basic augmented reality scene using Rajawali.
+ * It creates a scene with a background using color camera image, and renders the bounding box and
+ * three axes of any marker that has been detected in the image.
+ */
 class ClassRenderer(context: Context) : Renderer(context)
 {
-    internal val TAG: String = "ClassRenderer.class"
 
-    internal var screenBackgroundQuad: ScreenQuad
-    internal var cameraTexture: ATexture
-    internal var textureCoords0: FloatArray = floatArrayOf(0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f)
+    private val textureCoords0 = floatArrayOf(0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f)
 
-    internal var markerObjectHash: MutableMap<String, ClassMarkerObject>
+    // Rajawali texture used to render the Tango color camera.
+    private var mTangoCameraTexture: ATexture? = null
 
-    internal var isSceneCameraConfigured: Boolean = false
+    // Keeps track of whether the scene camera has been configured.
+    var isSceneCameraConfigured: Boolean = false
+        private set
 
-    init
-    {
-        markerObjectHash = HashMap()
-        screenBackgroundQuad = ScreenQuad()
+    private var mBackgroundQuad: ScreenQuad? = null
 
-        val tmp: StreamingTexture.ISurfaceListener? = null
-        cameraTexture = StreamingTexture("camera", tmp)
-    }
+    // All markers
+    private var mMarkerObjects: MutableMap<String, ClassMarkerObject>? = null
 
     override fun initScene()
     {
-        val cameraMaterial: Material = Material()
-        cameraMaterial.colorInfluence = 0.0f
+        if (mMarkerObjects == null)
+        {
+            mMarkerObjects = HashMap()
+        }
 
-        Log.d(TAG, "Creating screen quad")
-        screenBackgroundQuad.geometry.setTextureCoords(textureCoords0)
+        // Create a quad covering the whole background and assign a texture to it where the
+        // Tango color camera contents will be rendered.
+        val tangoCameraMaterial = Material()
+        tangoCameraMaterial.colorInfluence = 0f
+
+        if (mBackgroundQuad == null)
+        {
+            mBackgroundQuad = ScreenQuad()
+            mBackgroundQuad!!.geometry.setTextureCoords(textureCoords0)
+        }
+        // We need to use Rajawali's {@code StreamingTexture} since it sets up the texture
+        // for GL_TEXTURE_EXTERNAL_OES rendering.
+        mTangoCameraTexture = StreamingTexture("camera", null as StreamingTexture.ISurfaceListener?)
 
         try
         {
-            Log.d(TAG, "Setting texture")
-            cameraMaterial.addTexture(cameraTexture)
-            screenBackgroundQuad.material = cameraMaterial
+            tangoCameraMaterial.addTexture(mTangoCameraTexture)
+            mBackgroundQuad!!.material = tangoCameraMaterial
         }
         catch (e: ATexture.TextureException)
         {
-            Log.e(TAG, "Texture exception: ", e)
+            Log.e(TAG, "Exception creating texture for RGB camera contents", e)
         }
-        currentScene.addChildAt(screenBackgroundQuad, 0)
+
+        currentScene.addChildAt(mBackgroundQuad, 0)
     }
 
-    override fun onOffsetsChanged(xOffset: Float, yOffset: Float, xOffsetStep: Float, yOffsetStep: Float, xPixelOffset: Int, yPixelOffset: Int) { }
+    /**
+     * Update marker objects and scene.
+     */
+    fun updateMarkers(markerList: List<TangoSupport.Marker>)
+    {
+        if (markerList.size > 0)
+        {
+            val scene = currentScene
 
-    override fun onTouchEvent(event: MotionEvent?) { }
+            // Create objects based on new markers
+            for (i in markerList.indices)
+            {
+                val marker = markerList[i]
+                Log.w(TAG, "Marker detected[" + i + "] = " + marker.content)
 
-    /* Override this method to mark the camera for re-configuration (set proper
+                // Remove the marker object from scene if it exists.
+                val existingObject = mMarkerObjects!![marker.content]
+                if (existingObject != null)
+                {
+                    existingObject!!.removeFromScene(scene)
+                }
+
+                // Create a new marker object and add it to scene.
+                val newObject = ClassMarkerObject(marker)
+                mMarkerObjects!!.put(marker.content, newObject)
+                newObject.addToScene(scene)
+            }
+        }
+    }
+
+    /**
+     * Update background texture's UV coordinates when device orientation is changed (i.e., change
+     * between landscape and portrait mode).
+     * This must be run in the OpenGL thread.
+     */
+    fun updateColorCameraTextureUvGlThread(rotation: Int)
+    {
+        if (mBackgroundQuad == null)
+        {
+            mBackgroundQuad = ScreenQuad()
+        }
+
+        val textureCoords = TangoSupport.getVideoOverlayUVBasedOnDisplayRotation(textureCoords0, rotation)
+        mBackgroundQuad!!.geometry.setTextureCoords(textureCoords, true)
+        mBackgroundQuad!!.geometry.reload()
+    }
+
+    /**
+     * Update the scene camera based on the provided pose in Tango start of service frame.
+     * The camera pose should match the pose of the camera color at the time of the last rendered
+     * RGB frame, which can be retrieved with this.getTimestamp();
+     *
+     *
+     * NOTE: This must be called from the OpenGL render thread; it is not thread-safe.
+     */
+    fun updateRenderCameraPose(cameraPose: TangoPoseData)
+    {
+        val rotation = cameraPose.rotationAsFloats
+        val translation = cameraPose.translationAsFloats
+        val quaternion = Quaternion(rotation[3].toDouble(), rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble())
+        // Conjugating the Quaternion is needed because Rajawali uses left-handed convention for
+        // quaternions.
+        currentCamera.setRotation(quaternion.conjugate())
+        currentCamera.setPosition(translation[0].toDouble(), translation[1].toDouble(), translation[2].toDouble())
+    }
+
+    /**
+     * It returns the ID currently assigned to the texture where the Tango color camera contents
+     * should be rendered.
+     * NOTE: This must be called from the OpenGL render thread; it is not thread-safe.
+     */
+    val textureId: Int
+        get() = if (mTangoCameraTexture == null) -1 else mTangoCameraTexture!!.textureId
+
+    /**
+     * We need to override this method to mark the camera for re-configuration (set proper
      * projection matrix) since it will be reset by Rajawali on surface changes.
      */
-    override fun onRenderSurfaceSizeChanged(gl: GL10, width: Int, height: Int)
+    override fun onRenderSurfaceSizeChanged(gl: GL10?, width: Int, height: Int)
     {
         super.onRenderSurfaceSizeChanged(gl, width, height)
         isSceneCameraConfigured = false
     }
 
-    /* Handle screen orientation changes.
-       Run in OpenGL thread.
-    */
-    fun updateColorCameraTextureUvGlThread(rotation: Int)
-    {
-        val textureCoords: FloatArray = TangoSupport.getVideoOverlayUVBasedOnDisplayRotation(textureCoords0, rotation)
-        screenBackgroundQuad.geometry.setTextureCoords(textureCoords, true)
-        screenBackgroundQuad.geometry.reload()
-    }
-
-    /* Sets the projection matrix for the scene camera to match the parameters of the color camera */
+    /**
+     * Sets the projection matrix for the scene camera to match the parameters of the color camera,
+     * provided by the `TangoCameraIntrinsics`.
+     */
     fun setProjectionMatrix(matrixFloats: FloatArray)
     {
         currentCamera.projectionMatrix = Matrix4(matrixFloats)
     }
 
-    /* Returns the Texture ID on which the camera content is rendered.
-       This must be called from the OpenGL render thread
-     */
-    fun getTextureId(): Int
+    override fun onOffsetsChanged(xOffset: Float, yOffset: Float, xOffsetStep: Float, yOffsetStep: Float, xPixelOffset: Int, yPixelOffset: Int) { }
+
+    override fun onTouchEvent(event: MotionEvent) {}
+
+    companion object
     {
-        return cameraTexture.textureId
-    }
-
-    /* Update the scene camera based on the provided pose in Tango start of service frame.
-       The camera pose should match the pose of the camera color at the time of the last rendered
-       RGB frame, which can be retrieved with this.getTimestamp();
-       This must be called from the OpenGL render thread
-     */
-    fun updateRenderCameraPose(cameraPose: TangoPoseData)
-    {
-        val rotation: FloatArray = cameraPose.rotationAsFloats
-        val translation: FloatArray = cameraPose.translationAsFloats
-        val quaternion: Quaternion = Quaternion(rotation[3].toDouble(), rotation[0].toDouble(), rotation[1].toDouble(), rotation[2].toDouble())
-
-        /* Conjugating the Quaternion is needed because Rajawali uses left-handed convention for quaternions. */
-        currentCamera.setRotation(quaternion.conjugate())
-        currentCamera.setPosition(translation[0].toDouble(), translation[1].toDouble(), translation[2].toDouble())
-    }
-
-    fun updateMarker(markerList: List<TangoSupport.Marker>)
-    {
-        if(markerList.isNotEmpty())
-        {
-            for(marker in markerList)
-            {
-                val tangoPose: TangoPoseData = TangoSupport.getPoseAtTime(0.0,
-                        TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
-                        TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
-                        TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
-                        TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
-                        TangoSupport.ROTATION_IGNORED)
-                //val markerPose: TangoPoseData = TangoPoseData()
-                //markerPose.translation = marker.translation
-                //markerPose.rotation = marker.orientation
-
-                //val transformMatrix: Matrix4 = tangoPoseToMatrix(tangoPose)
-                // Log.d(TAG, String.format("%d %d %d %d", transformMatrix.doubleValues))
-                // TangoSupport.doubleTransformPose(transformMatrix.doubleValues, marker.translation, marker.orientation, marker.translation, marker.orientation)
-
-                val  existingMarker: ClassMarkerObject? = markerObjectHash[marker.content]
-
-                if(existingMarker != null)
-                {
-                    currentScene.removeChild(existingMarker.markerObject)
-                }
-                    val obj: ClassMarkerObject = ClassMarkerObject(marker)
-                    obj.transformObject()
-                    obj.makeMarker()
-                    currentScene.addChild(obj.markerObject)
-
-                    markerObjectHash[marker.content] = obj
-            }
-        }
-    }
-
-    fun tangoPoseToMatrix(tangoPose: TangoPoseData): Matrix4
-    {
-        var v: Vector3 = Vector3(tangoPose.translation[0], tangoPose.translation[1], tangoPose.translation[2])
-        var q: Quaternion = Quaternion(tangoPose.rotation[3], tangoPose.rotation[0], tangoPose.rotation[2], tangoPose.rotation[3])
-        q.conjugate()
-
-        var m: Matrix4 = Matrix4()
-        m.setAll(v, Vector3(1.0, 1.0, 1.0), q)
-
-        return m
+        private val TAG = ClassRenderer::class.java.simpleName
     }
 }
