@@ -64,6 +64,7 @@ class ActivityMain : Activity()
 {
     internal var surfaceView: SurfaceView? = null
     internal var renderer: ClassRenderer? = null
+    internal var interfaceParameters: ClassInterfaceParameters? = null
     internal var tango: Tango? = null
     private var config: TangoConfig? = null
     internal var isConnected = false
@@ -85,6 +86,8 @@ class ActivityMain : Activity()
 
         surfaceView = findViewById(R.id.surfaceview) as SurfaceView
         renderer = ClassRenderer(this)
+
+        interfaceParameters = ClassInterfaceParameters(this)
 
         val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager?
         displayManager?.registerDisplayListener(object : DisplayManager.DisplayListener
@@ -406,4 +409,7 @@ class ActivityMain : Activity()
             return m
         }
     }
+
+    fun getRenderer(): ClassRenderer? { return renderer }
+    fun getInterfaceParameters(): ClassInterfaceParameters? { return this.interfaceParameters }
 }

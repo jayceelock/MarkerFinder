@@ -96,7 +96,7 @@ class ClassRenderer(context: Context) : Renderer(context)
      */
     fun updateMarkers(markerList: List<TangoSupport.Marker>)
     {
-        if (markerList.size > 0)
+        if (markerList.isNotEmpty())
         {
             val scene = currentScene
 
@@ -104,8 +104,8 @@ class ClassRenderer(context: Context) : Renderer(context)
             for (i in markerList.indices)
             {
                 val marker = markerList[i]
+                marker.translation
                 Log.w(TAG, "Marker detected[" + i + "] = " + marker.content)
-
                 // Remove the marker object from scene if it exists.
                 val existingObject = mMarkerObjects!![marker.content]
                 if (existingObject != null)

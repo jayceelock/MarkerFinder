@@ -22,4 +22,28 @@
     <string name="exception_tango_invalid">"Tango invalid exception! Try again!"</string>
     <string name="exception_out_of_date">"Tango service outdated!"</string>
     <string name="permission_camera">"Camera permission needed!"</string>
+
+    <string name="pref_file_name">PREFERENCES</string>
+
+    <string name="pref_name_vibration_delay">    VIBRATION_DELAY    </string>
+    <string name="pref_name_pitch_dist_high">    PITCH_DIST_HIGH    </string>
+    <string name="pref_name_pitch_dist_low">     PITCH_DIST_LOW     </string>
+    <string name="pref_name_gain_dist_high">     GAIN_DIST_HIGH     </string>
+    <string name="pref_name_gain_dist_low">      GAIN_DIST_LOW      </string>
+    <string name="pref_name_pitch_high">         PITCH_HIGH         </string>
+    <string name="pref_name_pitch_low">          PITCH_LOW          </string>
+    <string name="pref_name_gain_high">          GAIN_HIGH          </string>
+    <string name="pref_name_gain_low">           GAIN_LOW           </string>
+    <string name="pref_name_distance_threshold"> DISTANCE_THRESHOLD </string>
+    <string name="pref_name_voice_timing"> VOICE_TIMING </string>
+
+    <string name="checkbox_name_timestamp">    CHECKBOX_TIMESTAMP    </string>
+    <string name="checkbox_name_translation">  CHECKBOX_TRANSLATION  </string>
+    <string name="checkbox_name_orientation">  CHECKBOX_ORIENTATION  </string>
+    <string name="checkbox_name_distance">     CHECKBOX_DISTANCE     </string>
+    <string name="checkbox_name_vibration">    CHECKBOX_VIBRATION    </string>
+    <string name="checkbox_name_gain">         CHECKBOX_GAIN         </string>
+    <string name="checkbox_name_pitch">        CHECKBOX_PITCH        </string>
+    <string name="title_activity_activity_position">ActivityPosition</string>
+
 </resources>
