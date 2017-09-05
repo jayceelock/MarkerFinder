@@ -74,9 +74,9 @@ class ActivityMain : Activity()
     // NOTE: Naming indicates which thread is in charge of updating this variable.
     internal var connectedTextureIdGlThread = INVALID_TEXTURE_ID
     internal val isFrameAvailableTangoThread = AtomicBoolean(false)
-    internal var rgbTimestampGlThread: Double = 0.toDouble()
+    internal var rgbTimestampGlThread: Double = 0.0
 
-    internal var displayRotation = 0
+    internal var displayRotation: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?)
     {
@@ -111,7 +111,7 @@ class ActivityMain : Activity()
 
         // Set render mode to RENDERMODE_CONTINUOUSLY to force getting onDraw callbacks until
         // the Tango service is properly set up and we start getting onFrameAvailable callbacks.
-        surfaceView!!.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
+        surfaceView?.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
         // Check and request camera permission at run time.
         if (checkAndRequestPermissions())
         {
@@ -135,8 +135,8 @@ class ActivityMain : Activity()
                 // mTango may be null if the app is closed before permissions are granted.
                 if (tango != null)
                 {
-                    tango!!.disconnectCamera(TangoCameraIntrinsics.TANGO_CAMERA_COLOR)
-                    tango!!.disconnect()
+                    tango?.disconnectCamera(TangoCameraIntrinsics.TANGO_CAMERA_COLOR)
+                    tango?.disconnect()
                 }
                 // We need to invalidate the connected texture ID so that we cause a
                 // re-connection in the OpenGL thread after resume.
@@ -171,7 +171,7 @@ class ActivityMain : Activity()
                 try
                 {
                     config = setupTangoConfig(tango!!)
-                    tango!!.connect(config!!)
+                    tango?.connect(config!!)
                     startupTango()
                     TangoSupport.initialize(tango!!)
                     isConnected = true
@@ -257,9 +257,9 @@ class ActivityMain : Activity()
         // Register a Rajawali Scene Frame Callback to update the scene camera pose whenever a new
         // RGB frame is rendered.
         // (@see https://github.com/Rajawali/Rajawali/wiki/Scene-Frame-Callbacks)
-        renderer!!.currentScene.registerFrameCallback(ClassRajawaliFrameCallback(this@ActivityMain))
+        renderer?.currentScene?.registerFrameCallback(ClassRajawaliFrameCallback(this@ActivityMain))
 
-        surfaceView!!.setSurfaceRenderer(renderer)
+        surfaceView?.setSurfaceRenderer(renderer)
     }
 
     /**
@@ -272,10 +272,10 @@ class ActivityMain : Activity()
 
         // We also need to update the camera texture UV coordinates. This must be run in the OpenGL
         // thread.
-        surfaceView!!.queueEvent {
+        surfaceView?.queueEvent {
             if (isConnected)
             {
-                renderer!!.updateColorCameraTextureUvGlThread(displayRotation)
+                renderer?.updateColorCameraTextureUvGlThread(displayRotation)
             }
         }
     }
