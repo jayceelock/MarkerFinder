@@ -62,14 +62,17 @@ import com.projecttango.tangosupport.TangoSupport
  */
 class ActivityMain : Activity()
 {
-    internal var surfaceView: SurfaceView? = null
-    internal var renderer: ClassRenderer? = null
-    internal var interfaceParameters: ClassInterfaceParameters? = null
-    internal var tango: Tango? = null
-    private var config: TangoConfig? = null
+    private lateinit var surfaceView: SurfaceView
+    private lateinit var tango: Tango
+    private lateinit var config: TangoConfig
+
+    internal lateinit var renderer: ClassRenderer
+    internal lateinit var interfaceParameters: ClassInterfaceParameters
+
+    @Volatile internal lateinit var currentImageBuffer: TangoImageBuffer
+
     internal var isConnected = false
     internal var cameraPoseTimestamp = 0.0
-    @Volatile internal var currentImageBuffer: TangoImageBuffer? = null
 
     // Texture rendering related fields.
     // NOTE: Naming indicates which thread is in charge of updating this variable.
@@ -89,8 +92,8 @@ class ActivityMain : Activity()
 
         interfaceParameters = ClassInterfaceParameters(this)
 
-        val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager?
-        displayManager?.registerDisplayListener(object : DisplayManager.DisplayListener
+        val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        displayManager.registerDisplayListener(object : DisplayManager.DisplayListener
         {
             override fun onDisplayAdded(displayId: Int) {}
 
@@ -114,7 +117,7 @@ class ActivityMain : Activity()
 
         // Set render mode to RENDERMODE_CONTINUOUSLY to force getting onDraw callbacks until
         // the Tango service is properly set up and we start getting onFrameAvailable callbacks.
-        surfaceView?.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
+        surfaceView.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
         // Check and request camera permission at run time.
         if (checkAndRequestPermissions())
         {
@@ -136,15 +139,15 @@ class ActivityMain : Activity()
             try
             {
                 // mTango may be null if the app is closed before permissions are granted.
-                if (tango != null)
-                {
-                    tango?.disconnectCamera(TangoCameraIntrinsics.TANGO_CAMERA_COLOR)
-                    tango?.disconnect()
+                tango.let {
+                    tango.disconnectCamera(TangoCameraIntrinsics.TANGO_CAMERA_COLOR)
+                    tango.disconnect()
                 }
+
                 // We need to invalidate the connected texture ID so that we cause a
                 // re-connection in the OpenGL thread after resume.
                 connectedTextureIdGlThread = INVALID_TEXTURE_ID
-                tango = null
+                // tango = null
                 isConnected = false
             }
             catch (e: TangoErrorException)
@@ -173,10 +176,10 @@ class ActivityMain : Activity()
             {
                 try
                 {
-                    config = setupTangoConfig(tango!!)
-                    tango?.connect(config!!)
+                    config = setupTangoConfig(tango)
+                    tango.connect(config)
                     startupTango()
-                    TangoSupport.initialize(tango!!)
+                    TangoSupport.initialize(tango)
                     isConnected = true
                     setDisplayRotation()
                 }
@@ -230,8 +233,8 @@ class ActivityMain : Activity()
         // No need to add any coordinate frame pairs since we aren't using pose data from callbacks.
         val framePairs = ArrayList<TangoCoordinateFramePair>()
 
-        tango!!.connectListener(framePairs, ClassTangoUpdateCallback(this@ActivityMain))
-        tango!!.experimentalConnectOnFrameListener(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, object : Tango.OnFrameAvailableListener
+        tango.connectListener(framePairs, ClassTangoUpdateCallback(this@ActivityMain))
+        tango.experimentalConnectOnFrameListener(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, object : Tango.OnFrameAvailableListener
         {
             override fun onFrameAvailable(tangoImageBuffer: TangoImageBuffer, i: Int)
             {
@@ -260,9 +263,9 @@ class ActivityMain : Activity()
         // Register a Rajawali Scene Frame Callback to update the scene camera pose whenever a new
         // RGB frame is rendered.
         // (@see https://github.com/Rajawali/Rajawali/wiki/Scene-Frame-Callbacks)
-        renderer?.currentScene?.registerFrameCallback(ClassRajawaliFrameCallback(this@ActivityMain))
+        renderer.currentScene?.registerFrameCallback(ClassRajawaliFrameCallback(this@ActivityMain))
 
-        surfaceView?.setSurfaceRenderer(renderer)
+        surfaceView.setSurfaceRenderer(renderer)
     }
 
     /**
@@ -275,10 +278,10 @@ class ActivityMain : Activity()
 
         // We also need to update the camera texture UV coordinates. This must be run in the OpenGL
         // thread.
-        surfaceView?.queueEvent {
+        surfaceView.queueEvent {
             if (isConnected)
             {
-                renderer?.updateColorCameraTextureUvGlThread(displayRotation)
+                renderer.updateColorCameraTextureUvGlThread(displayRotation)
             }
         }
     }
@@ -301,10 +304,7 @@ class ActivityMain : Activity()
     /**
      * Check to see we have the necessary permissions for this app.
      */
-    private fun hasCameraPermission(): Boolean
-    {
-        return ContextCompat.checkSelfPermission(this, CAMERA_PERMISSION) == PackageManager.PERMISSION_GRANTED
-    }
+    private fun hasCameraPermission() = ContextCompat.checkSelfPermission(this, CAMERA_PERMISSION) == PackageManager.PERMISSION_GRANTED
 
     /**
      * Request the necessary permissions for this app.
@@ -409,7 +409,4 @@ class ActivityMain : Activity()
             return m
         }
     }
-
-    fun getRenderer(): ClassRenderer? { return renderer }
-    fun getInterfaceParameters(): ClassInterfaceParameters? { return this.interfaceParameters }
 }

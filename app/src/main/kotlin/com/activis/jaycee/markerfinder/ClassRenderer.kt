@@ -42,20 +42,18 @@ import com.projecttango.tangosupport.TangoSupport
  */
 class ClassRenderer(context: Context) : Renderer(context)
 {
-
     private val textureCoords0 = floatArrayOf(0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f)
 
     // Rajawali texture used to render the Tango color camera.
-    private var mTangoCameraTexture: ATexture? = null
+    private lateinit var mTangoCameraTexture: ATexture
+    private lateinit var mBackgroundQuad: ScreenQuad
 
     // Keeps track of whether the scene camera has been configured.
     var isSceneCameraConfigured: Boolean = false
         private set
 
-    private var mBackgroundQuad: ScreenQuad? = null
-
     // All markers
-    private var mMarkerObjects: MutableMap<String, ClassMarkerObject>? = null
+    private lateinit var mMarkerObjects: MutableMap<String, ClassMarkerObject>
 
     override fun initScene()
     {
@@ -72,7 +70,7 @@ class ClassRenderer(context: Context) : Renderer(context)
         if (mBackgroundQuad == null)
         {
             mBackgroundQuad = ScreenQuad()
-            mBackgroundQuad!!.geometry.setTextureCoords(textureCoords0)
+            mBackgroundQuad.geometry.setTextureCoords(textureCoords0)
         }
         // We need to use Rajawali's {@code StreamingTexture} since it sets up the texture
         // for GL_TEXTURE_EXTERNAL_OES rendering.
@@ -81,7 +79,7 @@ class ClassRenderer(context: Context) : Renderer(context)
         try
         {
             tangoCameraMaterial.addTexture(mTangoCameraTexture)
-            mBackgroundQuad!!.material = tangoCameraMaterial
+            mBackgroundQuad.material = tangoCameraMaterial
         }
         catch (e: ATexture.TextureException)
         {
@@ -107,15 +105,15 @@ class ClassRenderer(context: Context) : Renderer(context)
                 marker.translation
                 Log.w(TAG, "Marker detected[" + i + "] = " + marker.content)
                 // Remove the marker object from scene if it exists.
-                val existingObject = mMarkerObjects!![marker.content]
+                val existingObject = mMarkerObjects[marker.content]
                 if (existingObject != null)
                 {
-                    existingObject!!.removeFromScene(scene)
+                    existingObject.removeFromScene(scene)
                 }
 
                 // Create a new marker object and add it to scene.
                 val newObject = ClassMarkerObject(marker)
-                mMarkerObjects!!.put(marker.content, newObject)
+                mMarkerObjects.put(marker.content, newObject)
                 newObject.addToScene(scene)
             }
         }
@@ -134,8 +132,8 @@ class ClassRenderer(context: Context) : Renderer(context)
         }
 
         val textureCoords = TangoSupport.getVideoOverlayUVBasedOnDisplayRotation(textureCoords0, rotation)
-        mBackgroundQuad!!.geometry.setTextureCoords(textureCoords, true)
-        mBackgroundQuad!!.geometry.reload()
+        mBackgroundQuad.geometry.setTextureCoords(textureCoords, true)
+        mBackgroundQuad.geometry.reload()
     }
 
     /**
@@ -163,7 +161,7 @@ class ClassRenderer(context: Context) : Renderer(context)
      * NOTE: This must be called from the OpenGL render thread; it is not thread-safe.
      */
     val textureId: Int
-        get() = if (mTangoCameraTexture == null) -1 else mTangoCameraTexture!!.textureId
+        get() = if (mTangoCameraTexture == null) -1 else mTangoCameraTexture.textureId
 
     /**
      * We need to override this method to mark the camera for re-configuration (set proper
