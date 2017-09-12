@@ -53,6 +53,10 @@ internal class RunnableSoundGenerator(context: Context) : Runnable
             tempSrc[0] = xPositionSource.toFloat()
             tempList[0] = xPositionListener.toFloat()
 
+            /* Update audio properties */
+            activityMain.metrics.pitch = pitch
+            activityMain.metrics.gain = gain
+
             JNINativeInterface.play(tempSrc, tempList, gain, pitch)
         }
 
@@ -66,12 +70,17 @@ internal class RunnableSoundGenerator(context: Context) : Runnable
     fun setTangoPose(tangoPose: TangoPoseData)
     {
         this.tangoPose = tangoPose
+
+        activityMain.metrics.setPoseData(tangoPose)
+        activityMain.metrics.setTimestamp(tangoPose.timestamp, true)
+
         this.run()
     }
 
     fun setTargetPose(targetPose: DoubleArray)
     {
         this.targetPose = targetPose
+        activityMain.metrics.targetPosition = targetPose
     }
 
     companion object

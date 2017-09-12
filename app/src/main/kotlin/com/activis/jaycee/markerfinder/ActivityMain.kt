@@ -69,6 +69,7 @@ class ActivityMain : Activity()
     internal lateinit var interfaceParameters: ClassInterfaceParameters
     internal lateinit var tango: Tango
     internal lateinit var runnableSoundGenerator: RunnableSoundGenerator
+    internal lateinit var metrics: ClassMetrics
 
     internal var isConnected = false
     internal var cameraPoseTimestamp = 0.0
@@ -121,6 +122,11 @@ class ActivityMain : Activity()
         if(!JNINativeInterface.init())
         {
             Log.e(TAG, "OpenAL init error")
+        }
+
+        if(metrics == null)
+        {
+            metrics = ClassMetrics(this)
         }
 
         // Set render mode to RENDERMODE_CONTINUOUSLY to force getting onDraw callbacks until
