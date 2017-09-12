@@ -1,8 +1,6 @@
 package com.activis.jaycee.markerfinder
 
 import android.app.Activity
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.AsyncTask
 import android.util.Log
 
@@ -10,12 +8,11 @@ import com.google.atap.tangoservice.TangoPoseData
 
 import java.io.BufferedReader
 import java.io.IOException
-import java.io.OutputStream
 import java.io.PrintWriter
 import java.io.StringReader
 import java.net.Socket
 
-class ClassMetrics(private val activity: Activity)
+class ClassMetrics()
 {
     private lateinit var dataStreamer: WifiDataSend
     private lateinit var poseData: TangoPoseData
@@ -51,7 +48,6 @@ class ClassMetrics(private val activity: Activity)
     companion object
     {
         private val TAG = ClassMetrics::class.java.simpleName
-        private val PREF_FILE_NAME = "PREFERENCES"
 
         private val DELIMITER = ","
     }
@@ -61,9 +57,8 @@ class ClassMetrics(private val activity: Activity)
     /* Trigger CSV update, write to wifi */
     fun setTimestamp(timestamp: Double, transmit: Boolean)
     {
-        val prefs = activity.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
-
         this.timeStamp = timestamp
+
         /*
         time - x - y - z - roll - pitch (deg) - yaw - distToObs - vibration - gain - pitch (Hz)
          */
