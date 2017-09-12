@@ -135,27 +135,20 @@ internal class ClassHelper(private val activityMain: ActivityMain)
     }
 }
 
-internal class mVector(var x: Double, var y: Double, var z: Double) {
-    val length: Double
+internal class mVector(var x: Double, var y: Double, var z: Double)
+{
+    val length: Double = sqrt(this.x * this.x + this.y * this.y + this.z * this.z)
 
-    init {
-
-        this.length = sqrt(this.x * this.x + this.y * this.y + this.z * this.z)
-    }
-
-    fun normalise() {
+    fun normalise()
+    {
         this.x /= this.length
         this.y /= this.length
         this.z /= this.length
     }
 
-    fun dotProduct(v: mVector): Double {
-        return this.x * v.x + this.y * v.y + this.z * v.z
-    }
+    fun dotProduct(v: mVector): Double  = this.x * v.x + this.y * v.y + this.z * v.z
 
-    fun invDotProduct(v: mVector): Double {
-        return acos(dotProduct(v))
-    }
+    fun invDotProduct(v: mVector): Double = acos(dotProduct(v))
 
     fun crossProduct(v: mVector): mVector {
         // p x v
@@ -164,7 +157,8 @@ internal class mVector(var x: Double, var y: Double, var z: Double) {
                 this.x * v.y - this.y * v.x)
     }
 
-    fun rotateVector(q: mQuaternion): mVector {
+    fun rotateVector(q: mQuaternion): mVector
+    {
         val x = (1.0 - 2.0 * q.y * q.y - 2.0 * q.z * q.z) * this.x +
                 2.0 * (q.x * q.y + q.w * q.z) * this.y +
                 2.0 * (q.x * q.z - q.w * q.y) * this.z
@@ -179,14 +173,17 @@ internal class mVector(var x: Double, var y: Double, var z: Double) {
     }
 }
 
-internal class mQuaternion {
+internal class mQuaternion
+{
     var x: Double = 0.toDouble()
     var y: Double = 0.toDouble()
     var z: Double = 0.toDouble()
     var w: Double = 0.toDouble()
+
     private var length: Double = 0.toDouble()
 
-    constructor(v: mVector, angle: Double) {
+    constructor(v: mVector, angle: Double)
+    {
         this.x = v.x * sin(angle / 2)
         this.y = v.y * sin(angle / 2)
         this.z = v.z * sin(angle / 2)
@@ -195,7 +192,8 @@ internal class mQuaternion {
         this.length = sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w)
     }
 
-    constructor(x: Double, y: Double, z: Double, w: Double) {
+    constructor(x: Double, y: Double, z: Double, w: Double)
+    {
         this.x = x
         this.y = y
         this.z = z
@@ -204,7 +202,8 @@ internal class mQuaternion {
         this.length = sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w)
     }
 
-    fun normalise() {
+    fun normalise()
+    {
         this.x /= this.length
         this.y /= this.length
         this.z /= this.length
@@ -212,10 +211,10 @@ internal class mQuaternion {
     }
 
     val inverse: Quaternion
-        get() =
-            Quaternion(-this.x / this.length, this.y / this.length, -this.z / this.length, this.w / this.length)
+        get() = Quaternion(-this.x / this.length, this.y / this.length, -this.z / this.length, this.w / this.length)
 
-    fun multiply(q: Quaternion): Quaternion {
+    fun multiply(q: Quaternion): Quaternion
+    {
         // is p * q (in that order)
         return Quaternion(this.w * q.x + this.x * q.w - this.y * q.z + this.z * q.y,
                 this.w * q.y + this.x * q.z + this.y * q.w - this.z * q.x,
@@ -229,7 +228,8 @@ internal class mQuaternion {
  * Convenient class for calculating transformations from the Tango world to the OpenGL world,
  * using Rajawali specific classes and conventions.
  */
-internal object ClassScenePoseCalculator {
+internal object ClassScenePoseCalculator
+{
     private val TAG = ClassScenePoseCalculator::class.java.simpleName
 
     /**
@@ -519,22 +519,22 @@ internal object ClassScenePoseCalculator {
  * Avoid instantiating the class since it will only be used statically.
  */
 
-internal class Pose(val position: Vector3, val orientation: Quaternion) {
-
-    override fun toString(): String {
-        return "p:$position,q:$orientation"
-    }
+internal class Pose(val position: Vector3, val orientation: Quaternion)
+{
+    override fun toString(): String = "p:$position,q:$orientation"
 }
 
 internal class DeviceExtrinsics(imuTDevicePose: TangoPoseData, imuTColorCameraPose: TangoPoseData,
-                                imuTDepthCameraPose: TangoPoseData) {
+                                imuTDepthCameraPose: TangoPoseData)
+{
     // Transformation from the position of the depth camera to the device frame.
     val deviceTDepthCamera: Matrix4
 
     // Transformation from the position of the color Camera to the device frame.
     val deviceTColorCamera: Matrix4
 
-    init {
+    init
+    {
         val deviceTImu = ClassScenePoseCalculator.tangoPoseToMatrix(imuTDevicePose).inverse()
         val imuTColorCamera = ClassScenePoseCalculator.tangoPoseToMatrix(imuTColorCameraPose)
         val imuTDepthCamera = ClassScenePoseCalculator.tangoPoseToMatrix(imuTDepthCameraPose)
