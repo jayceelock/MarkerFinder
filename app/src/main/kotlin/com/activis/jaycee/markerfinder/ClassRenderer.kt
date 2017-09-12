@@ -52,10 +52,10 @@ class ClassRenderer(context: Context) : Renderer(context)
     var isSceneCameraConfigured: Boolean = false
         private set
 
-    private lateinit var backgroundQuad: ScreenQuad
-
     // All markers
     private lateinit var markerObjects: MutableMap<String, ClassMarkerObject>
+
+    private var backgroundQuad: ScreenQuad? = null
 
     override fun initScene()
     {
@@ -66,8 +66,11 @@ class ClassRenderer(context: Context) : Renderer(context)
         val tangoCameraMaterial = Material()
         tangoCameraMaterial.colorInfluence = 0f
 
-        backgroundQuad = ScreenQuad()
-        backgroundQuad.geometry.setTextureCoords(textureCoords0)
+        if(backgroundQuad == null)
+        {
+            backgroundQuad = ScreenQuad()
+            backgroundQuad?.geometry?.setTextureCoords(textureCoords0)
+        }
 
         // We need to use Rajawali's {@code StreamingTexture} since it sets up the texture
         // for GL_TEXTURE_EXTERNAL_OES rendering.
@@ -76,7 +79,7 @@ class ClassRenderer(context: Context) : Renderer(context)
         try
         {
             tangoCameraMaterial.addTexture(tangoCameraTexture)
-            backgroundQuad.material = tangoCameraMaterial
+            backgroundQuad?.material = tangoCameraMaterial
         }
         catch (e: ATexture.TextureException)
         {
@@ -123,11 +126,14 @@ class ClassRenderer(context: Context) : Renderer(context)
      */
     fun updateColorCameraTextureUvGlThread(rotation: Int)
     {
-        backgroundQuad = ScreenQuad()
+        if(backgroundQuad == null)
+        {
+            backgroundQuad = ScreenQuad()
+        }
 
         val textureCoords = TangoSupport.getVideoOverlayUVBasedOnDisplayRotation(textureCoords0, rotation)
-        backgroundQuad.geometry.setTextureCoords(textureCoords, true)
-        backgroundQuad.geometry.reload()
+        backgroundQuad?.geometry?.setTextureCoords(textureCoords, true)
+        backgroundQuad?.geometry?.reload()
     }
 
     /**

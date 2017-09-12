@@ -5,7 +5,6 @@ import android.util.Log
 
 import com.google.atap.tangoservice.TangoException
 import com.google.atap.tangoservice.TangoPoseData
-import com.projecttango.tangosupport.TangoSupport
 
 internal class RunnableSoundGenerator(context: Context) : Runnable
 {

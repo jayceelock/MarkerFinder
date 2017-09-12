@@ -86,7 +86,7 @@ class ClassRajawaliFrameCallback(val activityMain: ActivityMain): ASceneFrameCal
                         param.markerSize = 0.1395
 
                         val worldTcamera = TangoSupport.getPoseAtTime(
-                                activityMain.currentImageBuffer!!.timestamp,
+                                activityMain.currentImageBuffer.timestamp,
                                 TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
                                 TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
                                 TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
