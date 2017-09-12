@@ -62,10 +62,10 @@ import com.projecttango.tangosupport.TangoSupport
  */
 class ActivityMain : Activity()
 {
-    private lateinit var surfaceView: SurfaceView
-    private lateinit var tango: Tango
     private lateinit var config: TangoConfig
 
+    internal lateinit var surfaceView: SurfaceView
+    internal lateinit var tango: Tango
     internal lateinit var renderer: ClassRenderer
     internal lateinit var interfaceParameters: ClassInterfaceParameters
 
