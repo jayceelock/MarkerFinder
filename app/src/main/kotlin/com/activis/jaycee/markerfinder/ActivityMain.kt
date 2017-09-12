@@ -124,10 +124,7 @@ class ActivityMain : Activity()
             Log.d(TAG, "OpenAL init error")
         }
 
-        if(metrics == null)
-        {
-            metrics = ClassMetrics(this)
-        }
+        metrics = ClassMetrics(this)
 
         // Set render mode to RENDERMODE_CONTINUOUSLY to force getting onDraw callbacks until
         // the Tango service is properly set up and we start getting onFrameAvailable callbacks.

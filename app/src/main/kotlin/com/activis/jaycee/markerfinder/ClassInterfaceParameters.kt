@@ -4,9 +4,10 @@ import android.content.Context
 
 import java.io.Serializable
 
-internal class ClassInterfaceParameters(context: Context) : Serializable {
+internal class ClassInterfaceParameters(context: Context) : Serializable
+{
 
-    private val distHighLimPitch: Float
+    private var distHighLimPitch: Float = 0f
     private val distLowLimPitch: Float
     private val distHighLimGain: Float
     private val distLowLimGain: Float
@@ -18,14 +19,20 @@ internal class ClassInterfaceParameters(context: Context) : Serializable {
     private var gainLowLim: Float = 0.toFloat()
     private var gainGradient: Float = 0.toFloat()
     private var gainIntercept: Float = 0.toFloat()
-    val distanceThreshold: Float
+    private val distanceThreshold: Float
 
     var vibrationDelay: Int = 0
-    val voiceTiming: Int
+    private val voiceTiming: Int
 
     private val activityMain: ActivityMain
 
-    init {
+    val gainLimits: FloatArray
+        get() = floatArrayOf(gainLowLim, gainHighLim)
+    val pitchLimits: FloatArray
+        get() = floatArrayOf(pitchLowLim, pitchHighLim)
+
+    init
+    {
         val PREF_FILE_NAME = context.getString(R.string.pref_file_name)
 
         val pitchDistHigh = context.getString(R.string.pref_name_pitch_dist_high)
@@ -43,7 +50,8 @@ internal class ClassInterfaceParameters(context: Context) : Serializable {
         val prefs = context.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE)
 
         // If one doesn't exist, none do...not good logic I guess, but I'm lazy
-        if (!prefs.contains(context.getString(R.string.pref_name_pitch_high))) {
+        if (!prefs.contains(context.getString(R.string.pref_name_pitch_high)))
+        {
             val editor = prefs.edit()
 
             // Fields do not exist yet. Save default values to fields
@@ -88,7 +96,13 @@ internal class ClassInterfaceParameters(context: Context) : Serializable {
         activityMain = context as ActivityMain
     }
 
-    fun updatePitchParams(highLim: Float, lowLim: Float) {
+    companion object
+    {
+        private val TAG = ClassInterfaceParameters::class.java.simpleName
+    }
+
+    private fun updatePitchParams(highLim: Float, lowLim: Float)
+    {
         pitchHighLim = highLim
         pitchLowLim = lowLim
 
@@ -96,7 +110,7 @@ internal class ClassInterfaceParameters(context: Context) : Serializable {
         pitchIntercept = pitchLowLim - pitchGradient * distLowLimPitch
     }
 
-    fun updateGainParams(highLim: Float, lowLim: Float) {
+    private fun updateGainParams(highLim: Float, lowLim: Float) {
         gainHighLim = highLim
         gainLowLim = lowLim
 
@@ -104,17 +118,23 @@ internal class ClassInterfaceParameters(context: Context) : Serializable {
         gainIntercept = gainLowLim - gainGradient * distLowLimGain
     }
 
-    fun getPitch(elevation: Double): Float {
-        var elevation = elevation
+    fun getPitch(elevation: Double): Float
+    {
+        var elevation: Double = elevation
         val pitch: Float
 
         // Compensate for the Tango's default position being 90deg upright
         elevation -= Math.PI / 2
-        if (elevation >= Math.PI / 2) {
+
+        if (elevation >= Math.PI / 2)
+        {
             pitch = Math.pow(2.0, pitchLowLim.toDouble()).toFloat()
-        } else if (elevation <= -Math.PI / 2) {
+        }
+        else if (elevation <= -Math.PI / 2) {
             pitch = Math.pow(2.0, pitchHighLim.toDouble()).toFloat()
-        } else {
+        }
+        else
+        {
             val gradientAngle = Math.toDegrees(Math.atan((pitchHighLim - pitchLowLim) / Math.PI))
 
             val grad = Math.tan(Math.toRadians(gradientAngle)).toFloat()
@@ -146,40 +166,43 @@ internal class ClassInterfaceParameters(context: Context) : Serializable {
         }
     }
 
-    fun getGain(src: Double, list: Double): Float {
+    fun getGain(src: Double, list: Double): Float
+    {
         val diffd = list - src
 
         // Use absolute difference, because you might end up behind the marker
         val diff = Math.sqrt(diffd * diffd).toFloat()
 
-        return if (diff >= distHighLimGain) {
+        return if (diff >= distHighLimGain)
+        {
             gainHighLim
-        } else if (diff <= distLowLimGain) {
+        }
+        else if (diff <= distLowLimGain)
+        {
             gainLowLim
-        } else {
+        }
+        else
+        {
             gainGradient * diff + gainIntercept
         }
     }
 
-    fun getGain(distance: Double): Float {
+    fun getGain(distance: Double): Float
+    {
         // Use absolute difference, because you might end up behind the marker
         val diff = Math.sqrt(distance * distance).toFloat()
 
-        return if (diff >= distHighLimGain) {
+        return if (diff >= distHighLimGain)
+        {
             gainHighLim
-        } else if (diff <= distLowLimGain) {
+        }
+        else if (diff <= distLowLimGain)
+        {
             gainLowLim
-        } else {
+        }
+        else
+        {
             gainGradient * diff + gainIntercept
         }
-    }
-
-    val gainLimits: FloatArray
-        get() = floatArrayOf(gainLowLim, gainHighLim)
-    val pitchLimits: FloatArray
-        get() = floatArrayOf(pitchLowLim, pitchHighLim)
-
-    companion object {
-        private val TAG = ClassInterfaceParameters::class.java.simpleName
     }
 }
