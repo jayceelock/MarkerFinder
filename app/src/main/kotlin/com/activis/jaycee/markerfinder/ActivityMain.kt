@@ -69,6 +69,7 @@ class ActivityMain : Activity()
     internal lateinit var renderer: ClassRenderer
     internal lateinit var interfaceParameters: ClassInterfaceParameters
     internal lateinit var runnableSoundGenerator: RunnableSoundGenerator
+    internal lateinit var metrics: ClassMetrics
 
     @Volatile internal lateinit var currentImageBuffer: TangoImageBuffer
 
@@ -113,14 +114,19 @@ class ActivityMain : Activity()
         setupRenderer()
     }
 
-    override fun onStart()
+    override fun onResume()
     {
-        super.onStart()
+        super.onResume()
 
         /* Start OpenAL service */
         if(!JNINativeInterface.init())
         {
             Log.d(TAG, "OpenAL init error")
+        }
+
+        if(metrics == null)
+        {
+            metrics = ClassMetrics(this)
         }
 
         // Set render mode to RENDERMODE_CONTINUOUSLY to force getting onDraw callbacks until
@@ -133,9 +139,9 @@ class ActivityMain : Activity()
         }
     }
 
-    public override fun onStop()
+    public override fun onPause()
     {
-        super.onStop()
+        super.onPause()
 
         /* Stop OpenAL service */
         if(!JNINativeInterface.kill())
