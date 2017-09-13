@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 JNIEXPORT bool JNICALL
-Java_com_activis_jaycee_targetfinder_JNINativeInterface_init(JNIEnv* env, jobject obj)
+Java_com_activis_jaycee_markerfinder_JNINativeInterface_init(JNIEnv* env, jobject obj)
 {
     sound.init();
     sound.startSound();
@@ -16,7 +16,7 @@ Java_com_activis_jaycee_targetfinder_JNINativeInterface_init(JNIEnv* env, jobjec
 }
 
 JNIEXPORT bool JNICALL
-Java_com_activis_jaycee_targetfinder_JNINativeInterface_kill(JNIEnv* env, jobject obj)
+Java_com_activis_jaycee_markerfinder_JNINativeInterface_kill(JNIEnv* env, jobject obj)
 {
     sound.endSound();
     sound.kill();
@@ -25,7 +25,7 @@ Java_com_activis_jaycee_targetfinder_JNINativeInterface_kill(JNIEnv* env, jobjec
 }
 
 JNIEXPORT void JNICALL
-Java_com_activis_jaycee_targetfinder_JNINativeInterface_play(JNIEnv* env, jobject obj, jfloatArray src, jfloatArray list, jfloat gain, jfloat pitch)
+Java_com_activis_jaycee_markerfinder_JNINativeInterface_play(JNIEnv* env, jobject obj, jfloatArray src, jfloatArray list, jfloat gain, jfloat pitch)
 {
     sound.play(env, src, list, gain, pitch);
 

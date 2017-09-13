@@ -62,19 +62,19 @@ import com.projecttango.tangosupport.TangoSupport
  */
 class ActivityMain : Activity()
 {
-    private lateinit var config: TangoConfig
+    private var config: TangoConfig? = null
 
     internal lateinit var surfaceView: SurfaceView
-    internal lateinit var tango: Tango
     internal lateinit var renderer: ClassRenderer
     internal lateinit var interfaceParameters: ClassInterfaceParameters
+    internal lateinit var tango: Tango
     internal lateinit var runnableSoundGenerator: RunnableSoundGenerator
     internal lateinit var metrics: ClassMetrics
 
-    @Volatile internal lateinit var currentImageBuffer: TangoImageBuffer
-
     internal var isConnected = false
     internal var cameraPoseTimestamp = 0.0
+
+    @Volatile internal lateinit var currentImageBuffer: TangoImageBuffer
 
     // Texture rendering related fields.
     // NOTE: Naming indicates which thread is in charge of updating this variable.
@@ -119,10 +119,10 @@ class ActivityMain : Activity()
     {
         super.onResume()
 
-        /* Start OpenAL service */
+        /* Start OpenAL Service */
         if(!JNINativeInterface.init())
         {
-            Log.d(TAG, "OpenAL init error")
+            Log.e(TAG, "OpenAL init error")
         }
 
         metrics = ClassMetrics()
@@ -141,10 +141,10 @@ class ActivityMain : Activity()
     {
         super.onPause()
 
-        /* Stop OpenAL service */
+        /* Stop OpenAL Service */
         if(!JNINativeInterface.kill())
         {
-            Log.d(TAG, "OpenAL kill error")
+            Log.e(TAG, "OpenAL kill error")
         }
 
         // Synchronize against disconnecting while the service is being used in the OpenGL thread or
@@ -322,7 +322,7 @@ class ActivityMain : Activity()
     /**
      * Check to see we have the necessary permissions for this app.
      */
-    private fun hasCameraPermission() = ContextCompat.checkSelfPermission(this, CAMERA_PERMISSION) == PackageManager.PERMISSION_GRANTED
+    private fun hasCameraPermission(): Boolean = ContextCompat.checkSelfPermission(this, CAMERA_PERMISSION) == PackageManager.PERMISSION_GRANTED
 
     /**
      * Request the necessary permissions for this app.

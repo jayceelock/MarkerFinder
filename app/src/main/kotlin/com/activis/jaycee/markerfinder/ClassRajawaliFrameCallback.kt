@@ -1,6 +1,5 @@
 package com.activis.jaycee.markerfinder
 
-import android.opengl.Matrix
 import android.util.Log
 import com.google.atap.tangoservice.TangoCameraIntrinsics
 import com.google.atap.tangoservice.TangoErrorException

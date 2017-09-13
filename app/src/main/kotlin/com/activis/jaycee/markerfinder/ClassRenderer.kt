@@ -51,7 +51,6 @@ class ClassRenderer(context: Context) : Renderer(context)
 
     // Rajawali texture used to render the Tango color camera.
     private lateinit var tangoCameraTexture: ATexture
-    private lateinit var backgroundQuad: ScreenQuad
 
     // Keeps track of whether the scene camera has been configured.
     var isSceneCameraConfigured: Boolean = false
@@ -60,23 +59,23 @@ class ClassRenderer(context: Context) : Renderer(context)
     // All markers
     private lateinit var markerObjects: MutableMap<String, ClassMarkerObject>
 
+    private var backgroundQuad: ScreenQuad? = null
+
     override fun initScene()
     {
-        if (markerObjects == null)
-        {
-            markerObjects = HashMap()
-        }
+        markerObjects = HashMap()
 
         // Create a quad covering the whole background and assign a texture to it where the
         // Tango color camera contents will be rendered.
         val tangoCameraMaterial = Material()
         tangoCameraMaterial.colorInfluence = 0f
 
-        if (backgroundQuad == null)
+        if(backgroundQuad == null)
         {
             backgroundQuad = ScreenQuad()
-            backgroundQuad.geometry.setTextureCoords(textureCoords0)
+            backgroundQuad?.geometry?.setTextureCoords(textureCoords0)
         }
+
         // We need to use Rajawali's {@code StreamingTexture} since it sets up the texture
         // for GL_TEXTURE_EXTERNAL_OES rendering.
         tangoCameraTexture = StreamingTexture("camera", null as StreamingTexture.ISurfaceListener?)
@@ -84,7 +83,7 @@ class ClassRenderer(context: Context) : Renderer(context)
         try
         {
             tangoCameraMaterial.addTexture(tangoCameraTexture)
-            backgroundQuad.material = tangoCameraMaterial
+            backgroundQuad?.material = tangoCameraMaterial
         }
         catch (e: ATexture.TextureException)
         {
@@ -106,9 +105,10 @@ class ClassRenderer(context: Context) : Renderer(context)
             // Create objects based on new markers
             for (i in markerList.indices)
             {
-                val marker = markerList[i]
-                marker.translation
-                Log.w(TAG, "Marker detected[" + i + "] = " + marker.content)
+                val marker: TangoSupport.Marker = markerList[i]
+                // marker.translation
+                Log.d(TAG, "Marker detected[" + i + "] = " + marker.content)
+                Log.d(TAG, "Centre = " + marker.translation[0] + ", " + marker.translation[1] + ", " + marker.translation[2])
                 // Remove the marker object from scene if it exists.
                 val existingObject = markerObjects[marker.content]
                 existingObject.let {
@@ -130,14 +130,14 @@ class ClassRenderer(context: Context) : Renderer(context)
      */
     fun updateColorCameraTextureUvGlThread(rotation: Int)
     {
-        if (backgroundQuad == null)
+        if(backgroundQuad == null)
         {
             backgroundQuad = ScreenQuad()
         }
 
         val textureCoords = TangoSupport.getVideoOverlayUVBasedOnDisplayRotation(textureCoords0, rotation)
-        backgroundQuad.geometry.setTextureCoords(textureCoords, true)
-        backgroundQuad.geometry.reload()
+        backgroundQuad?.geometry?.setTextureCoords(textureCoords, true)
+        backgroundQuad?.geometry?.reload()
     }
 
     /**
@@ -171,7 +171,7 @@ class ClassRenderer(context: Context) : Renderer(context)
      * We need to override this method to mark the camera for re-configuration (set proper
      * projection matrix) since it will be reset by Rajawali on surface changes.
      */
-    override fun onRenderSurfaceSizeChanged(gl: GL10?, width: Int, height: Int)
+    override fun onRenderSurfaceSizeChanged(gl: GL10, width: Int, height: Int)
     {
         super.onRenderSurfaceSizeChanged(gl, width, height)
         isSceneCameraConfigured = false

@@ -20,9 +20,9 @@ android {
         }
     }
     sourceSets {
-        main {
-            java.srcDirs += 'src/main/kotlin'
+        main{
             jniLibs.srcDirs = ['src/main/jniLibs']
+            java.srcDirs += 'src/main/kotlin'
         }
     }
     externalNativeBuild {

@@ -18,11 +18,6 @@ internal class RunnableSoundGenerator(context: Context) : Runnable
         tangoPose = TangoPoseData()
     }
 
-    companion object
-    {
-        private val TAG = RunnableSoundGenerator::class.java.simpleName
-    }
-
     override fun run()
     {
         try
@@ -86,5 +81,10 @@ internal class RunnableSoundGenerator(context: Context) : Runnable
     {
         this.targetPose = targetPose
         activityMain.metrics.targetPosition = targetPose
+    }
+
+    companion object
+    {
+        private val TAG = RunnableSoundGenerator::class.java.simpleName
     }
 }
