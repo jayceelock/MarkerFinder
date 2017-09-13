@@ -58,7 +58,7 @@ class ClassMarkerObject
         // Create a quaternion from marker orientation.
         val q = Quaternion(marker.orientation[3], marker.orientation[0], marker.orientation[1], marker.orientation[2])
 
-        Log.d(TAG, String.format("%f %f %f", center.x, center.y, center.z))
+        // Log.d(TAG, String.format("%f %f %f", center.x, center.y, center.z))
         // Calculate marker size in meters, assuming square-shape markers.
         val markerSize = cornerTopLeft.distanceTo(cornerTopRight)
 
@@ -91,7 +91,7 @@ class ClassMarkerObject
         points.add(Vector3.addAndCreate(center, zAxis))
         mAxisZ = Line3D(points, axisLineWidth, Color.BLUE)
         mAxisZ.material = material
-        Log.d(TAG, String.format("ZAxis %f %f %f", mAxisZ.getPoint(0).x, mAxisZ.getPoint(0).y, mAxisZ.getPoint(0).z))
+        // Log.d(TAG, String.format("ZAxis %f %f %f", mAxisZ.getPoint(0).x, mAxisZ.getPoint(0).y, mAxisZ.getPoint(0).z))
 
         // Rect
         points.clear()

@@ -101,9 +101,10 @@ class ClassRenderer(context: Context) : Renderer(context)
             // Create objects based on new markers
             for (i in markerList.indices)
             {
-                val marker = markerList[i]
-                marker.translation
-                Log.w(TAG, "Marker detected[" + i + "] = " + marker.content)
+                val marker: TangoSupport.Marker = markerList[i]
+                // marker.translation
+                Log.d(TAG, "Marker detected[" + i + "] = " + marker.content)
+                Log.d(TAG, "Centre = " + marker.translation[0] + ", " + marker.translation[1] + ", " + marker.translation[2])
                 // Remove the marker object from scene if it exists.
                 val existingObject = markerObjects[marker.content]
                 existingObject.let {
