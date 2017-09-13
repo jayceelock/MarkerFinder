@@ -21,15 +21,15 @@ class ClassTangoUpdateCallback(val activityMain: ActivityMain): Tango.TangoUpdat
             // If you need to render at a higher rate (i.e., if you want to render complex
             // animations smoothly) you  can use RENDERMODE_CONTINUOUSLY throughout the
             // application lifecycle.
-            if (activityMain.surfaceView!!.renderMode != GLSurfaceView.RENDERMODE_WHEN_DIRTY)
+            if (activityMain.surfaceView.renderMode != GLSurfaceView.RENDERMODE_WHEN_DIRTY)
             {
-                activityMain.surfaceView!!.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+                activityMain.surfaceView.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
             }
 
             // Mark a camera frame as available for rendering in the OpenGL thread.
             activityMain.isFrameAvailableTangoThread.set(true)
             // Trigger a Rajawali render to update the scene with the new RGB data.
-            activityMain.surfaceView!!.requestRender()
+            activityMain.surfaceView.requestRender()
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.activis.jaycee.markerfinder
 
-import android.opengl.Matrix
 import android.util.Log
 import com.google.atap.tangoservice.TangoCameraIntrinsics
 import com.google.atap.tangoservice.TangoErrorException
@@ -32,28 +31,28 @@ class ClassRajawaliFrameCallback(val activityMain: ActivityMain): ASceneFrameCal
                 }
 
                 // Set up scene camera projection to match RGB camera intrinsics.
-                if (!activityMain.renderer!!.isSceneCameraConfigured)
+                if (!activityMain.renderer.isSceneCameraConfigured)
                 {
                     val intrinsics = TangoSupport.getCameraIntrinsicsBasedOnDisplayRotation(
                             TangoCameraIntrinsics.TANGO_CAMERA_COLOR,
                             activityMain.displayRotation)
-                    activityMain.renderer!!.setProjectionMatrix(ActivityMain.projectionMatrixFromCameraIntrinsics(intrinsics))
+                    activityMain.renderer.setProjectionMatrix(ActivityMain.projectionMatrixFromCameraIntrinsics(intrinsics))
                 }
                 // Connect the camera texture to the OpenGL Texture if necessary
                 // NOTE: When the OpenGL context is recycled, Rajawali may regenerate the
                 // texture with a different ID.
-                if (activityMain.connectedTextureIdGlThread != activityMain.renderer!!.textureId)
+                if (activityMain.connectedTextureIdGlThread != activityMain.renderer.textureId)
                 {
-                    activityMain.tango!!.connectTextureId(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, activityMain.renderer!!.textureId)
-                    activityMain.connectedTextureIdGlThread = activityMain.renderer!!.textureId
-                    Log.d(ClassRajawaliFrameCallback.TAG, "connected to texture id: " + activityMain.renderer!!.textureId)
+                    activityMain.tango.connectTextureId(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, activityMain.renderer.textureId)
+                    activityMain.connectedTextureIdGlThread = activityMain.renderer.textureId
+                    Log.d(ClassRajawaliFrameCallback.TAG, "connected to texture id: " + activityMain.renderer.textureId)
                 }
 
                 // If there is a new RGB camera frame available, update the texture
                 // with it.
                 if (activityMain.isFrameAvailableTangoThread.compareAndSet(true, false))
                 {
-                    activityMain.rgbTimestampGlThread = activityMain.tango!!.updateTexture(TangoCameraIntrinsics.TANGO_CAMERA_COLOR)
+                    activityMain.rgbTimestampGlThread = activityMain.tango.updateTexture(TangoCameraIntrinsics.TANGO_CAMERA_COLOR)
                 }
 
                 // If a new RGB frame has been rendered, update the camera pose to match.
@@ -78,7 +77,7 @@ class ClassRajawaliFrameCallback(val activityMain: ActivityMain): ASceneFrameCal
                     if (lastFramePose.statusCode == TangoPoseData.POSE_VALID)
                     {
                         // Update the camera pose from the renderer
-                        activityMain.renderer!!.updateRenderCameraPose(lastFramePose)
+                        activityMain.renderer.updateRenderCameraPose(lastFramePose)
                         activityMain.cameraPoseTimestamp = lastFramePose.timestamp
 
                         // Detect markers within the current image buffer.
@@ -102,7 +101,7 @@ class ClassRajawaliFrameCallback(val activityMain: ActivityMain): ASceneFrameCal
                                     worldTcamera.rotation,
                                     param)
 
-                            activityMain.renderer!!.updateMarkers(markerList)
+                            activityMain.renderer.updateMarkers(markerList)
                         }
                         catch (e: TangoException)
                         {
