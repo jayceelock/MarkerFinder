@@ -88,6 +88,7 @@ class ActivityMain : Activity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        Log.d(TAG, "Here")
 
         surfaceView = findViewById(R.id.surfaceview) as SurfaceView
         renderer = ClassRenderer(this)
@@ -124,7 +125,7 @@ class ActivityMain : Activity()
             Log.d(TAG, "OpenAL init error")
         }
 
-        metrics = ClassMetrics(this)
+        metrics = ClassMetrics()
 
         // Set render mode to RENDERMODE_CONTINUOUSLY to force getting onDraw callbacks until
         // the Tango service is properly set up and we start getting onFrameAvailable callbacks.
