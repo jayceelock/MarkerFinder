@@ -3,10 +3,16 @@ package com.activis.jaycee.markerfinder
 import android.opengl.GLSurfaceView
 import com.google.atap.tangoservice.Tango
 import com.google.atap.tangoservice.TangoCameraIntrinsics
+import com.google.atap.tangoservice.TangoPoseData
 
 class ClassTangoUpdateCallback(val activityMain: ActivityMain): Tango.TangoUpdateCallback()
 {
     private val TAG: String = "TangoUpdateCallback"
+
+    override fun onPoseAvailable(pose: TangoPoseData)
+    {
+        activityMain.runnableSoundGenerator.setTangoPose(pose)
+    }
 
     override fun onFrameAvailable(cameraId: Int)
     {
