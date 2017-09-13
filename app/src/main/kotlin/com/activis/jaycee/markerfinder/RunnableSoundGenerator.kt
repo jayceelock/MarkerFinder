@@ -12,11 +12,10 @@ internal class RunnableSoundGenerator(context: Context) : Runnable
     private var tangoPose: TangoPoseData
     private var targetPose: DoubleArray = doubleArrayOf(0.0, 0.0, 0.0)
 
-    private val activityMain: ActivityMain
+    private val activityMain: ActivityMain = context as ActivityMain
 
     init
     {
-        activityMain = context as ActivityMain
         tangoPose = TangoPoseData()
     }
 
@@ -49,8 +48,8 @@ internal class RunnableSoundGenerator(context: Context) : Runnable
 
             val distanceToObjective = Math.sqrt(xDist * xDist + yDist * yDist + zDist * zDist)
 
-            val pitch = activityMain.getInterfaceParameters().getPitch(elevationAngle)
-            val gain = activityMain.getInterfaceParameters().getGain(distanceToObjective)
+            val pitch = activityMain.interfaceParameters!!.getPitch(elevationAngle)
+            val gain = activityMain.interfaceParameters!!.getGain(distanceToObjective)
 
             tempSrc[0] = xPositionSource.toFloat()
             tempList[0] = xPositionListener.toFloat()

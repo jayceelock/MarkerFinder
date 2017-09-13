@@ -138,7 +138,7 @@ class ClassRajawaliFrameCallback(val activityMain: ActivityMain): ASceneFrameCal
 
     override fun onPostFrame(sceneTime: Long, deltaTime: Double) { }
 
-    override fun callPreFrame(): Boolean { return true }
+    override fun callPreFrame(): Boolean = true
 
     companion object
     {
