@@ -106,9 +106,8 @@ class ClassRenderer(context: Context) : Renderer(context)
                 Log.w(TAG, "Marker detected[" + i + "] = " + marker.content)
                 // Remove the marker object from scene if it exists.
                 val existingObject = markerObjects[marker.content]
-                if (existingObject != null)
-                {
-                    existingObject.removeFromScene(scene)
+                existingObject.let {
+                    existingObject?.removeFromScene(scene)
                 }
 
                 // Create a new marker object and add it to scene.

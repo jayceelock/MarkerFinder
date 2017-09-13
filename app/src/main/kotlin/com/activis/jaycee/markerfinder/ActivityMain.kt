@@ -68,6 +68,7 @@ class ActivityMain : Activity()
     internal lateinit var renderer: ClassRenderer
     internal lateinit var interfaceParameters: ClassInterfaceParameters
     internal lateinit var tango: Tango
+    internal lateinit var runnableSoundGenerator: RunnableSoundGenerator
 
     internal var isConnected = false
     internal var cameraPoseTimestamp = 0.0
@@ -91,6 +92,7 @@ class ActivityMain : Activity()
         renderer = ClassRenderer(this)
 
         interfaceParameters = ClassInterfaceParameters(this)
+        runnableSoundGenerator = RunnableSoundGenerator(this)
 
         val displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager?
         displayManager?.registerDisplayListener(object : DisplayManager.DisplayListener
@@ -115,6 +117,12 @@ class ActivityMain : Activity()
     {
         super.onResume()
 
+        /* Start OpenAL Service */
+        if(!JNINativeInterface.init())
+        {
+            Log.e(TAG, "OpenAL init error")
+        }
+
         // Set render mode to RENDERMODE_CONTINUOUSLY to force getting onDraw callbacks until
         // the Tango service is properly set up and we start getting onFrameAvailable callbacks.
         surfaceView.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
@@ -128,6 +136,12 @@ class ActivityMain : Activity()
     public override fun onPause()
     {
         super.onPause()
+
+        /* Stop OpenAL Service */
+        if(!JNINativeInterface.kill())
+        {
+            Log.e(TAG, "OpenAL kill error")
+        }
 
         // Synchronize against disconnecting while the service is being used in the OpenGL thread or
         // in the UI thread.

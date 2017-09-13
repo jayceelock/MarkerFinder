@@ -10,9 +10,25 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        externalNativeBuild {
+            cmake {
+                arguments '-DANDROID_STL=c++_static'
+            }
+        }
+        ndk {
+            abiFilters 'armeabi-v7a'
+        }
     }
     sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
+        main{
+            jniLibs.srcDirs = ['src/main/jniLibs']
+            java.srcDirs += 'src/main/kotlin'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
     }
     buildTypes {
         release {
