@@ -1,6 +1,7 @@
 package com.activis.jaycee.markerfinder
 
-object JNINativeInterface {
+object JNINativeInterface
+{
     init {
         System.loadLibrary("javaInterface")
     }
