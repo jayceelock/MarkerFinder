@@ -12,11 +12,11 @@ import java.io.PrintWriter
 import java.io.StringReader
 import java.net.Socket
 
-class ClassMetrics()
+class ClassMetrics
 {
-    private lateinit var dataStreamer: WifiDataSend
     private lateinit var poseData: TangoPoseData
 
+    private var dataStreamer: WifiDataSend = WifiDataSend()
     private var timeStamp: Double = 0.toDouble()
 
     internal var vibrationIntensity = 0f
@@ -111,7 +111,7 @@ class ClassMetrics()
         }
 
         /* WRITE TO WIFI PORT */
-        if (transmit && (dataStreamer == null || dataStreamer.status != AsyncTask.Status.RUNNING))
+        if (transmit && dataStreamer.status != AsyncTask.Status.RUNNING)
         {
             Log.d(TAG, "wifi transmitting")
             dataStreamer = WifiDataSend()

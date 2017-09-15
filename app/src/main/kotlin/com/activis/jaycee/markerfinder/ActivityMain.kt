@@ -16,13 +16,6 @@
 
 package com.activis.jaycee.markerfinder
 
-import com.google.atap.tangoservice.Tango
-import com.google.atap.tangoservice.TangoCameraIntrinsics
-import com.google.atap.tangoservice.TangoConfig
-import com.google.atap.tangoservice.TangoCoordinateFramePair
-import com.google.atap.tangoservice.TangoErrorException
-import com.google.atap.tangoservice.TangoInvalidException
-import com.google.atap.tangoservice.TangoOutOfDateException
 import com.google.atap.tangoservice.experimental.TangoImageBuffer
 
 import android.Manifest
@@ -38,6 +31,7 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.widget.Toast
+import com.google.atap.tangoservice.*
 
 import org.rajawali3d.view.SurfaceView
 
@@ -47,19 +41,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.projecttango.tangosupport.TangoSupport
 
-/**
- * This is a simple example that shows how to use the Tango APIs to detect markers within camera
- * images.
- *
- *
- * Note that it is important to include the KEY_BOOLEAN_LOWLATENCYIMUINTEGRATION configuration
- * parameter in order to achieve best results synchronizing the Rajawali virtual world with the
- * RGB camera.
- *
- *
- * If you're looking for a more stripped down example that doesn't use a rendering library like
- * Rajawali, see java_hello_video_example.
- */
 class ActivityMain : Activity()
 {
     private var config: TangoConfig? = null
@@ -88,10 +69,9 @@ class ActivityMain : Activity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        Log.d(TAG, "Here")
 
         surfaceView = findViewById(R.id.surfaceview) as SurfaceView
-        renderer = ClassRenderer(this)
+        renderer = ClassRenderer(this, this)
 
         interfaceParameters = ClassInterfaceParameters(this)
         runnableSoundGenerator = RunnableSoundGenerator(this)
@@ -156,7 +136,7 @@ class ActivityMain : Activity()
         {
             try
             {
-                // mTango may be null if the app is closed before permissions are granted.
+                // tango may be null if the app is closed before permissions are granted.
                 tango.let {
                     tango.disconnectCamera(TangoCameraIntrinsics.TANGO_CAMERA_COLOR)
                     tango.disconnect()
@@ -238,6 +218,10 @@ class ActivityMain : Activity()
         // base frame AREA_DESCRIPTION and target frame DEVICE.
         config.putBoolean(TangoConfig.KEY_BOOLEAN_DRIFT_CORRECTION, true)
 
+        config.putBoolean(TangoConfig.KEY_BOOLEAN_MOTIONTRACKING, true)
+        config.putBoolean(TangoConfig.KEY_BOOLEAN_SMOOTH_POSE, true)
+        config.putBoolean(TangoConfig.KEY_BOOLEAN_AUTORECOVERY, true)
+
         return config
     }
 
@@ -248,8 +232,9 @@ class ActivityMain : Activity()
      */
     private fun startupTango()
     {
-        // No need to add any coordinate frame pairs since we aren't using pose data from callbacks.
         val framePairs = ArrayList<TangoCoordinateFramePair>()
+        framePairs.add(TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE))
+
 
         tango.connectListener(framePairs, ClassTangoUpdateCallback(this@ActivityMain))
         tango.experimentalConnectOnFrameListener(TangoCameraIntrinsics.TANGO_CAMERA_COLOR, object : Tango.OnFrameAvailableListener
@@ -372,7 +357,6 @@ class ActivityMain : Activity()
 
     /**
      * Display toast on UI thread.
-
      * @param resId The resource id of the string resource to use. Can be formatted text.
      */
     private fun showsToastAndFinishOnUiThread(resId: Int)
@@ -393,7 +377,6 @@ class ActivityMain : Activity()
 
         /**
          * Use Tango camera intrinsics to calculate the projection matrix for the Rajawali scene.
-
          * @param intrinsics camera instrinsics for computing the project matrix.
          */
         internal fun projectionMatrixFromCameraIntrinsics(intrinsics: TangoCameraIntrinsics): FloatArray

@@ -1,6 +1,7 @@
 package com.activis.jaycee.markerfinder
 
 import android.opengl.GLSurfaceView
+import android.util.Log
 import com.google.atap.tangoservice.Tango
 import com.google.atap.tangoservice.TangoCameraIntrinsics
 import com.google.atap.tangoservice.TangoPoseData

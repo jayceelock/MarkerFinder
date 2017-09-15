@@ -40,8 +40,10 @@ import com.projecttango.tangosupport.TangoSupport
  * It creates a scene with a background using color camera image, and renders the bounding box and
  * three axes of any marker that has been detected in the image.
  */
-class ClassRenderer(context: Context) : Renderer(context)
+class ClassRenderer(context: Context, activityMain: ActivityMain) : Renderer(context)
 {
+    private val activityMain: ActivityMain = activityMain
+
     companion object
     {
         private val TAG = ClassRenderer::class.java.simpleName
@@ -107,15 +109,17 @@ class ClassRenderer(context: Context) : Renderer(context)
             {
                 val marker: TangoSupport.Marker = markerList[i]
                 // marker.translation
-                Log.d(TAG, "Marker detected[" + i + "] = " + marker.content)
-                Log.d(TAG, "Centre = " + marker.translation[0] + ", " + marker.translation[1] + ", " + marker.translation[2])
+                Log.v(TAG, "Marker detected[" + i + "] = " + marker.content)
+                Log.v(TAG, "Centre = " + marker.translation[0] + ", " + marker.translation[1] + ", " + marker.translation[2])
+                activityMain.runnableSoundGenerator.setTargetPose(marker.translation)
+
                 // Remove the marker object from scene if it exists.
                 val existingObject = markerObjects[marker.content]
                 existingObject.let {
                     existingObject?.removeFromScene(scene)
                 }
 
-                // Create a new marker object and add it to scene.
+                /* Create a new marker object and add it to scene. */
                 val newObject = ClassMarkerObject(marker)
                 markerObjects.put(marker.content, newObject)
                 newObject.addToScene(scene)

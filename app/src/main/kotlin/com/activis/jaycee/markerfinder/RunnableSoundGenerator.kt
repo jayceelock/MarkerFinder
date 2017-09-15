@@ -23,7 +23,7 @@ internal class RunnableSoundGenerator(context: Context) : Runnable
         try
         {
             // val targetPoseVector = mVector(activityMain.getRenderer().getObjectPosition().x, activityMain.getRenderer().getObjectPosition().y, activityMain.getRenderer().getObjectPosition().z)
-            val targetPoseVector = mVector(targetPose[0], targetPose[1], targetPose[2])
+            val targetPoseVector = mVector(targetPose[0], -targetPose[1], targetPose[2])
 
             val elevationAngle = ClassHelper.getElevationAngle(targetPoseVector, tangoPose)
             val xPositionListener = ClassHelper.getXPosition(targetPoseVector, tangoPose)
