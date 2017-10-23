@@ -100,8 +100,11 @@ class ClassRenderer(context: Context, activityMain: ActivityMain) : Renderer(con
      */
     fun updateMarkers(markerList: List<TangoSupport.Marker>)
     {
+        activityMain.markerInView = false
         if (markerList.isNotEmpty())
         {
+            activityMain.markerInView = true
+
             val scene = currentScene
 
             // Create objects based on new markers

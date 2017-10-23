@@ -57,7 +57,10 @@ internal class RunnableSoundGenerator(context: Context) : Runnable
             activityMain.metrics.pitch = pitch
             activityMain.metrics.gain = gain
 
-            JNINativeInterface.play(tempSrc, tempList, gain, pitch)
+            if(activityMain.markerInView)
+            {
+                JNINativeInterface.play(tempSrc, tempList, gain, pitch)
+            }
         }
 
         catch (e: TangoException)

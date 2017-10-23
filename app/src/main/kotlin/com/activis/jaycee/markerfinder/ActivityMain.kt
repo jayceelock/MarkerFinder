@@ -65,6 +65,8 @@ class ActivityMain : Activity()
 
     internal var displayRotation: Int = 0
 
+    internal var markerInView = false
+
     override fun onCreate(savedInstanceState: Bundle?)
     {
         super.onCreate(savedInstanceState)
