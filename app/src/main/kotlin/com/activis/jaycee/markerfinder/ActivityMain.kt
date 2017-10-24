@@ -27,23 +27,26 @@ import android.hardware.display.DisplayManager
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
+import android.view.MotionEvent
 import android.widget.Toast
 import com.google.atap.tangoservice.*
 
 import org.rajawali3d.view.SurfaceView
 
 import java.nio.ByteBuffer
-import java.util.ArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.projecttango.tangosupport.TangoSupport
+import java.util.*
 
-class ActivityMain : Activity()
+class ActivityMain : Activity(), TextToSpeech.OnInitListener
 {
     private var config: TangoConfig? = null
+    private var tts: TextToSpeech? = null
 
     internal lateinit var surfaceView: SurfaceView
     internal lateinit var renderer: ClassRenderer
@@ -71,6 +74,9 @@ class ActivityMain : Activity()
     {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        tts = TextToSpeech(this, this)
+
 
         surfaceView = findViewById(R.id.surfaceview) as SurfaceView
         renderer = ClassRenderer(this, this)
@@ -127,6 +133,11 @@ class ActivityMain : Activity()
         if(!JNINativeInterface.kill())
         {
             Log.e(TAG, "OpenAL kill error")
+        }
+
+        if(tts != null)
+        {
+            tts?.shutdown()
         }
 
         // Synchronize against disconnecting while the service is being used in the OpenGL thread or
@@ -367,6 +378,44 @@ class ActivityMain : Activity()
             Toast.makeText(this@ActivityMain, getString(resId), Toast.LENGTH_LONG).show()
             finish()
         }
+    }
+
+    override fun onInit(status: Int)
+    {
+        if(status == TextToSpeech.SUCCESS)
+        {
+            val result: Int? = tts?.setLanguage(Locale.UK)
+            if(result == TextToSpeech.LANG_MISSING_DATA)
+            {
+                Toast.makeText(this, "Language not available", Toast.LENGTH_LONG).show()
+            }
+            Log.d(TAG, "TTS Initialised")
+        }
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean
+    {
+        val action: Int = event.action
+
+        when(action)
+        {
+            MotionEvent.ACTION_DOWN ->
+            {
+                Log.d(TAG, "Marker in view: " + markerInView)
+                if(markerInView)
+                {
+                    speak(renderer.markerInfo)
+                }
+            }
+        }
+
+        return super.onTouchEvent(event)
+    }
+
+    private fun speak(text: String)
+    {
+        Log.d(TAG, "Marker Info: " + text)
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null)
     }
 
     companion object

@@ -18,6 +18,7 @@ package com.activis.jaycee.markerfinder
 import com.google.atap.tangoservice.TangoPoseData
 
 import android.content.Context
+import android.speech.tts.TextToSpeech
 
 import android.util.Log
 import android.view.MotionEvent
@@ -43,6 +44,8 @@ import com.projecttango.tangosupport.TangoSupport
 class ClassRenderer(context: Context, activityMain: ActivityMain) : Renderer(context)
 {
     private val activityMain: ActivityMain = activityMain
+
+    internal var markerInfo: String = ""
 
     companion object
     {
@@ -126,6 +129,8 @@ class ClassRenderer(context: Context, activityMain: ActivityMain) : Renderer(con
                 val newObject = ClassMarkerObject(marker)
                 markerObjects.put(marker.content, newObject)
                 newObject.addToScene(scene)
+
+                markerInfo = marker.content
             }
         }
     }

@@ -29,7 +29,7 @@ internal class RunnableSoundGenerator(context: Context) : Runnable
             val xPositionListener = ClassHelper.getXPosition(targetPoseVector, tangoPose)
             val xPositionSource = targetPose[0]
 
-            Log.d(TAG, String.format("xPos: %f", xPositionListener))
+            Log.v(TAG, String.format("xPos: %f", xPositionListener))
 
             val tempSrc = FloatArray(3)
             val tempList = FloatArray(3)
