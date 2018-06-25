@@ -41,10 +41,8 @@ import com.projecttango.tangosupport.TangoSupport
  * It creates a scene with a background using color camera image, and renders the bounding box and
  * three axes of any marker that has been detected in the image.
  */
-class ClassRenderer(context: Context, activityMain: ActivityMain) : Renderer(context)
+class ClassRenderer(context: Context, private val activityMain: ActivityMain) : Renderer(context)
 {
-    private val activityMain: ActivityMain = activityMain
-
     internal var markerInfo: String = ""
 
     companion object
